@@ -27,7 +27,7 @@
               .catch(error => console.error('AJAX-fout:', error));
         });
     });
-});*/
+});
 
 
 
