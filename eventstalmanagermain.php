@@ -2,7 +2,7 @@
 /*
 Plugin Name: EventStableManager
 Description: Plugin voor het beheer van een paardenstal tijdens een evenement. Deze versie gebruikt CF7-formulieren voor aanmelden en afmelden.
-Version: 3.0.1
+Version: 3.0.2
 Author: Stein Fraza
 */
 
