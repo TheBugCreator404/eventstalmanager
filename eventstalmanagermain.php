@@ -105,6 +105,7 @@ add_action( 'admin_menu', 'esm_register_admin_menu' );
 function esm_main_page() {
     echo '<div class="wrap"><h1>EventStableManager</h1>';
     echo '<p>Welkom bij de EventStableManager plugin.</p>';
+    echo do_shortcode("[eventstable_dashboard]");
     echo '<p>Gebruik de submenu-items om instellingen, stallen & boxen configuratie en shortcodes te beheren.</p>';
     echo '</div>';
 }
