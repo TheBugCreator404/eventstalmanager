@@ -877,14 +877,14 @@ function esm_get_box_data_ajax() {
 add_action('wp_ajax_esm_get_box_data', 'esm_get_box_data_ajax');
 add_action('wp_ajax_nopriv_esm_get_box_data', 'esm_get_box_data_ajax');
 
-//function esm_enqueue_huurders_assets() {
-//    if ( is_admin() ) return;
-//    wp_enqueue_script( 'esm-huurders-script', plugin_dir_url( __FILE__ ) . 'js/esm-huurders.js', array('jquery'), '1.0', true );
-//    wp_localize_script('esm-huurders-script', 'esm_vars', array(
-//         'ajaxUrl' => admin_url('admin-ajax.php')
-//    ));
-//}
-//add_action( 'wp_enqueue_scripts', 'esm_enqueue_huurders_assets' );
+function esm_enqueue_huurders_assets() {
+    if ( is_admin() ) return;
+    wp_enqueue_script( 'esm-huurders-script', plugin_dir_url( __FILE__ ) . 'js/esm-huurders.js', array('jquery'), '1.0', true );
+    wp_localize_script('esm-huurders-script', 'esm_vars', array(
+         'ajaxUrl' => admin_url('admin-ajax.php')
+    ));
+}
+add_action( 'wp_enqueue_scripts', 'esm_enqueue_huurders_assets' );
 
 function esm_generate_qrcode_zip_ajax() {
     // Controleer of de gebruiker de juiste rechten heeft.
