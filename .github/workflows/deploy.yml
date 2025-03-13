@@ -1,0 +1,24 @@
+name: Publish Website
+
+on:
+  push:
+    branches:
+      - main
+
+
+jobs:
+  web-deploy:
+    name: 🚀 Deploy Website Every Commit
+    runs-on: ubuntu-latest
+    steps:
+    - name: 🚚 Get Latest Code
+      uses: actions/checkout@v3
+    
+    - name: 📂 Sync Files
+      uses: SamKirkland/web-deploy@v1
+      with:
+        target-server: 92.113.18.124
+        remote-user: u851462100
+        ssh-port: 65002
+        private-ssh-key: ${{ secrets.SSH_KEY }}
+        destination-path: /home/u851462100/domains/stallenik25.digikapitein.nl/public_html/wp-content/plugins/eventstalmanager/
