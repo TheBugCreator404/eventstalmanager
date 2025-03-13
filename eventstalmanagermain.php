@@ -525,58 +525,42 @@ add_shortcode('eventstable_dashboard', 'esm_dashboard_shortcode');
 // het bijbehorende CF7 formulier weer (aanmelden of afmelden).
 function esm_huurders_shortcode() {
     ob_start();
-    
-    if(!isset($_GET['stal']) || !isset($_GET['box'])){
-        echo '<p>Fout: Geen stalgang of boxnummer gevonden in de URL. Gebruik bijvoorbeeld ?stal=A&amp;box=3</p>';
-        return ob_get_clean();
-    }
-    
-    $stalgang = sanitize_text_field($_GET['stal']);
-    $boxnummer = intval($_GET['box']);
-    
-    global $wpdb;
-    $table_name = $wpdb->prefix . 'eventstable_manager';
-    $box = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE stalgang = %s AND boxnummer = %d", $stalgang, $boxnummer));
-    if(!$box){
-        $box = (object) array(
-            'current_status' => 'n.v.t.',
-            'previous_status' => '',
-            'last_modified' => '',
-            'modified_by' => ''
-        );
-    }
-    
-    echo '<div class="esm-huurders">';
-    echo '<h2>Box Details</h2>';
-    echo '<p><strong>Stalgang:</strong> ' . esc_html($stalgang) . '</p>';
-    echo '<p><strong>Boxnummer:</strong> ' . esc_html($boxnummer) . '</p>';
-    echo '<p><strong>Huidige status:</strong> ' . esc_html($box->current_status) . '</p>';
-    echo '<p><strong>Vorige status:</strong> ' . esc_html($box->previous_status) . '</p>';
-    echo '<p><strong>Laatste wijziging:</strong> ' . esc_html($box->last_modified) . '</p>';
-    echo '<p><strong>Gewijzigd door:</strong> ' . esc_html($box->modified_by) . '</p>';
-    
-    // Bepaal op basis van de huidige status welke actie (en dus welk CF7 formulier) beschikbaar is
-    $allowed_aanmelden = get_option('esm_allowed_aanmelden', array());
-    $allowed_afmelden = get_option('esm_allowed_afmelden', array());
-    $cf7_aanmelden_id = get_option('esm_cf7_aanmelden_form_id', '');
-    $cf7_afmelden_id = get_option('esm_cf7_afmelden_form_id', '');
-    
-    if(in_array($box->current_status, $allowed_aanmelden) && !empty($cf7_aanmelden_id)){
-        echo '<h3>Aanmelden</h3>';
-        // De CF7 shortcode – zorg dat dit formulier de vereiste (verborgen) velden bevat!
-        echo do_shortcode('[contact-form-7 id="' . intval($cf7_aanmelden_id) . '"]');
-    } elseif(in_array($box->current_status, $allowed_afmelden) && !empty($cf7_afmelden_id)){
-        echo '<h3>Afmelden</h3>';
-        echo do_shortcode('[contact-form-7 id="' . intval($cf7_afmelden_id) . '"]');
-    } else {
-        echo '<p>Geen actie beschikbaar voor de huidige status.</p>';
-    }
-    
-    echo '</div>';
-    
+    ?>
+    <div id="esm-huurders-content">
+         <p>Bezig met laden...</p>
+    </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', function(){
+         // Haal de GET-parameters uit de URL
+         var params = new URLSearchParams(window.location.search);
+         var stal = params.get('stal');
+         var box = params.get('box');
+         if (stal && box) {
+              // Bouw de AJAX-URL
+              var ajaxUrl = "<?php echo admin_url('admin-ajax.php'); ?>";
+              var url = ajaxUrl + '?action=esm_get_box_data&stal=' + encodeURIComponent(stal) + '&box=' + encodeURIComponent(box);
+              fetch(url)
+              .then(response => response.json())
+              .then(data => {
+                  if(data.success) {
+                      document.getElementById('esm-huurders-content').innerHTML = data.data.html;
+                  } else {
+                      document.getElementById('esm-huurders-content').innerHTML = '<p>' + data.data + '</p>';
+                  }
+              })
+              .catch(error => {
+                  document.getElementById('esm-huurders-content').innerHTML = '<p>Fout: ' + error + '</p>';
+              });
+         } else {
+              document.getElementById('esm-huurders-content').innerHTML = '<p>Fout: Geen stal of box parameter gevonden in de URL.</p>';
+         }
+    });
+    </script>
+    <?php
     return ob_get_clean();
 }
 add_shortcode('eventstable_huurders', 'esm_huurders_shortcode');
+
 
 // -----------------------------------------------------
 // CF7 INTEGRATIE
@@ -860,6 +844,68 @@ function esm_cf7_custom_validate_update_password($result, $tag) {
     }
     return $result;
 }
+
+/**
+ * AJAX-handler om de actuele boxgegevens op te halen.
+ * Verwacht GET-parameters: 'stal' en 'box'
+ */
+function esm_get_box_data_ajax() {
+    // Haal de parameters op en sanitize ze
+    $stalgang = isset($_GET['stal']) ? sanitize_text_field($_GET['stal']) : '';
+    $boxnummer = isset($_GET['box']) ? intval($_GET['box']) : 0;
+    
+    if ( empty($stalgang) || $boxnummer === 0 ) {
+         wp_send_json_error('Ongeldige parameters.');
+    }
+    
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'eventstable_manager';
+    $box = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE stalgang = %s AND boxnummer = %d", $stalgang, $boxnummer));
+    if(!$box){
+        // Als de box niet bestaat, maak een standaard object
+        $box = (object) array(
+            'current_status' => 'n.v.t.',
+            'previous_status' => '',
+            'last_modified' => '',
+            'modified_by' => ''
+        );
+    }
+    
+    // Start output buffering om de HTML-output samen te stellen
+    ob_start();
+    ?>
+    <div class="esm-huurders">
+       <h2>Box Details</h2>
+       <p><strong>Stalgang:</strong> <?php echo esc_html($stalgang); ?></p>
+       <p><strong>Boxnummer:</strong> <?php echo esc_html($boxnummer); ?></p>
+       <p><strong>Huidige status:</strong> <?php echo esc_html($box->current_status); ?></p>
+       <p><strong>Vorige status:</strong> <?php echo esc_html($box->previous_status); ?></p>
+       <p><strong>Laatste wijziging:</strong> <?php echo esc_html($box->last_modified); ?></p>
+       <p><strong>Gewijzigd door:</strong> <?php echo esc_html($box->modified_by); ?></p>
+       <?php
+       // Bepaal welke actie beschikbaar is op basis van de huidige status
+       $allowed_aanmelden = get_option('esm_allowed_aanmelden', array());
+       $allowed_afmelden = get_option('esm_allowed_afmelden', array());
+       $cf7_aanmelden_id = get_option('esm_cf7_aanmelden_form_id', '');
+       $cf7_afmelden_id = get_option('esm_cf7_afmelden_form_id', '');
+       
+       if(in_array($box->current_status, $allowed_aanmelden) && !empty($cf7_aanmelden_id)){
+           echo '<h3>Aanmelden</h3>';
+           echo do_shortcode('[contact-form-7 id="' . intval($cf7_aanmelden_id) . '"]');
+       } elseif(in_array($box->current_status, $allowed_afmelden) && !empty($cf7_afmelden_id)){
+           echo '<h3>Afmelden</h3>';
+           echo do_shortcode('[contact-form-7 id="' . intval($cf7_afmelden_id) . '"]');
+       } else {
+           echo '<p>Geen actie beschikbaar voor de huidige status.</p>';
+       }
+       ?>
+    </div>
+    <?php
+    $html = ob_get_clean();
+    wp_send_json_success(array('html' => $html));
+}
+add_action('wp_ajax_esm_get_box_data', 'esm_get_box_data_ajax');
+add_action('wp_ajax_nopriv_esm_get_box_data', 'esm_get_box_data_ajax');
 
 function esm_generate_qrcode_zip_ajax() {
     // Controleer of de gebruiker de juiste rechten heeft.
