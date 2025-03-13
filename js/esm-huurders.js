@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function(){
+/*document.addEventListener('DOMContentLoaded', function(){
     // Stel dat je een link hebt met de class 'load-box-data'
     document.querySelectorAll('.load-box-data').forEach(function(link) {
         link.addEventListener('click', function(e) {
@@ -27,12 +27,12 @@ document.addEventListener('DOMContentLoaded', function(){
               .catch(error => console.error('AJAX-fout:', error));
         });
     });
-});
+});*/
 
 
 
 
-/*
+
 document.addEventListener('DOMContentLoaded', function(){
     var params = new URLSearchParams(window.location.search);
     var stal = params.get('stal');
@@ -55,4 +55,3 @@ document.addEventListener('DOMContentLoaded', function(){
          document.getElementById('esm-huurders-content').innerHTML = '<p>Fout: Geen stal of box parameter gevonden in de URL.</p>';
     }
 });
-*/
