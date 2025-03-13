@@ -29,7 +29,7 @@
     });
 });
 
-*/
+
 
 
 
@@ -54,4 +54,4 @@ document.addEventListener('DOMContentLoaded', function(){
     } else {
          document.getElementById('esm-huurders-content').innerHTML = '<p>Fout: Geen stal of box parameter gevonden in de URL.</p>';
     }
-});
+});*/
