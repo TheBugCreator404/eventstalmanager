@@ -739,6 +739,7 @@ add_action( 'wpcf7_before_send_mail', 'esm_cf7_update_handler' );
 
 // Voeg een script toe dat na een succesvolle CF7 verzending de gebruiker doorstuurt
 function esm_cf7_redirect_script() {
+    console.log("redirect functie activated");
     $redirect_page = get_option('esm_redirect_page');
     if ( empty( $redirect_page ) ) {
          return;
