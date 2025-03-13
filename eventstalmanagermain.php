@@ -536,7 +536,6 @@ function esm_huurders_shortcode() {
 add_shortcode('eventstable_huurders', 'esm_huurders_shortcode');
 
 
-
 // -----------------------------------------------------
 // CF7 INTEGRATIE
 // -----------------------------------------------------
