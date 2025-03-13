@@ -56,8 +56,8 @@ function esm_register_admin_menu() {
 
     add_submenu_page(
         'esm_main',
-        'Bulk Status Wijzigen',
-        'Bulk Status Wijzigen',
+        'Bulk edit',
+        'Bulk edit',
         'manage_options',
         'esm_bulk',
         'esm_bulk_update_page'
