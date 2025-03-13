@@ -527,38 +527,13 @@ function esm_huurders_shortcode() {
     ob_start();
     ?>
     <div id="esm-huurders-content">
-         <p>Bezig met laden...</p>
+         <p>Bezig met laden…</p>
     </div>
-    <script>
-    document.addEventListener('DOMContentLoaded', function(){
-         // Haal de GET-parameters uit de URL
-         var params = new URLSearchParams(window.location.search);
-         var stal = params.get('stal');
-         var box = params.get('box');
-         if (stal && box) {
-              var ajaxUrl = "<?php echo admin_url('admin-ajax.php'); ?>";
-              var url = ajaxUrl + '?action=esm_get_box_data&stal=' + encodeURIComponent(stal) + '&box=' + encodeURIComponent(box);
-              fetch(url)
-              .then(response => response.json())
-              .then(data => {
-                  if(data.success) {
-                      document.getElementById('esm-huurders-content').innerHTML = data.data.html;
-                  } else {
-                      document.getElementById('esm-huurders-content').innerHTML = '<p>' + data.data + '</p>';
-                  }
-              })
-              .catch(error => {
-                  document.getElementById('esm-huurders-content').innerHTML = '<p>Fout: ' + error + '</p>';
-              });
-         } else {
-              document.getElementById('esm-huurders-content').innerHTML = '<p>Fout: Geen stal of box parameter gevonden in de URL.</p>';
-         }
-    });
-    </script>
     <?php
     return ob_get_clean();
 }
 add_shortcode('eventstable_huurders', 'esm_huurders_shortcode');
+
 
 
 // -----------------------------------------------------
@@ -879,7 +854,6 @@ function esm_get_box_data_ajax() {
        <p><strong>Laatste wijziging:</strong> <?php echo esc_html($box->last_modified); ?></p>
        <p><strong>Gewijzigd door:</strong> <?php echo esc_html($box->modified_by); ?></p>
        <?php
-       // Actie bepalen op basis van de huidige status
        $allowed_aanmelden = get_option('esm_allowed_aanmelden', array());
        $allowed_afmelden = get_option('esm_allowed_afmelden', array());
        $cf7_aanmelden_id = get_option('esm_cf7_aanmelden_form_id', '');
