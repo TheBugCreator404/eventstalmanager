@@ -820,9 +820,9 @@ add_action( 'wp_enqueue_scripts', 'esm_enqueue_modal_assets' );
  * wanneer het formulier gerenderd wordt in een AJAX-context.
  */
 add_filter('wpcf7_form_action_url', 'esm_fix_cf7_form_action_url', 10, 2);
-function esm_fix_cf7_form_action_url($url, $contact_form) {
+function esm_fix_cf7_form_action_url($url, $contact_form = null) {
     if ( defined('DOING_AJAX') && DOING_AJAX ) {
-        // Pas de URL aan naar de gewenste front-end pagina (pas eventueel aan)
+        // Pas de URL aan naar de gewenste front-end pagina (pas indien nodig aan)
         return home_url('/form/');
     }
     return $url;
