@@ -816,6 +816,22 @@ function esm_enqueue_modal_assets() {
 add_action( 'wp_enqueue_scripts', 'esm_enqueue_modal_assets' );
 
 /**
+ * Forceer CF7 om een correcte front-end URL te gebruiken als formulieractie,
+ * wanneer het formulier gerenderd wordt in een AJAX-context.
+ */
+add_filter('wpcf7_form_action_url', 'esm_fix_cf7_form_action_url', 10, 2);
+function esm_fix_cf7_form_action_url($url, $contact_form) {
+    // Als we in een AJAX-context zitten, overschrijven we de URL.
+    if ( defined('DOING_AJAX') && DOING_AJAX ) {
+         // Stel hier de gewenste URL in, bijvoorbeeld de URL van de pagina waarop het formulier hoort te verschijnen.
+         // Je kunt bijvoorbeeld home_url('/form/') of een andere relevante URL gebruiken.
+         $fixed_url = home_url('/form/');
+         return $fixed_url;
+    }
+    return $url;
+}
+
+/**
  * Schakel CF7 AJAX uit voor de formulieren die in de shortcode worden gebruikt.
  */
 add_filter('wpcf7_use_ajax', 'esm_disable_cf7_ajax', 10, 2);
