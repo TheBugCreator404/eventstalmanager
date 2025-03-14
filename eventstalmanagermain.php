@@ -901,7 +901,13 @@ function esm_get_box_data_ajax() {
     </div>
     <?php
     $html = ob_get_clean();
+
+    while (ob_get_level() > 0) {
+        ob_end_clean();
+    }
+    
     wp_send_json_success(array('html' => $html));
+    exit;
 }
 add_action('wp_ajax_esm_get_box_data', 'esm_get_box_data_ajax');
 add_action('wp_ajax_nopriv_esm_get_box_data', 'esm_get_box_data_ajax');
