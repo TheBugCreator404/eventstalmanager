@@ -1,17 +1,14 @@
 document.addEventListener('DOMContentLoaded', function(){
-    // Haal de GET-parameters uit de URL
     var params = new URLSearchParams(window.location.search);
     var stal = params.get('stal');
     var box = params.get('box');
     
     if (stal && box) {
-         // Bouw de AJAX URL, gebruikmakend van de door wp_localize_script meegegeven ajaxUrl
          var url = esm_vars.ajaxUrl + '?action=esm_get_box_data&stal=' + encodeURIComponent(stal) + '&box=' + encodeURIComponent(box);
          fetch(url)
          .then(response => response.json())
          .then(data => {
               if(data.success) {
-                  // Bouw de HTML voor de boxgegevens op basis van de data
                   var info = data.data;
                   var detailsHtml = '<h2>Box Details</h2>' +
                       '<p><strong>Stalgang:</strong> ' + info.stalgang + '</p>' +
@@ -30,7 +27,6 @@ document.addEventListener('DOMContentLoaded', function(){
                       document.getElementById('cf7-afmelden').style.display = 'block';
                       document.getElementById('cf7-aanmelden').style.display = 'none';
                   } else {
-                      // Als geen actie toegestaan is, zorg dan dat beide formulieren verborgen blijven.
                       document.getElementById('cf7-aanmelden').style.display = 'none';
                       document.getElementById('cf7-afmelden').style.display = 'none';
                   }

@@ -815,6 +815,21 @@ function esm_enqueue_modal_assets() {
 }
 add_action( 'wp_enqueue_scripts', 'esm_enqueue_modal_assets' );
 
+/**
+ * Schakel CF7 AJAX uit voor de formulieren die in de shortcode worden gebruikt.
+ */
+add_filter('wpcf7_use_ajax', 'esm_disable_cf7_ajax', 10, 2);
+function esm_disable_cf7_ajax($use_ajax, $contact_form) {
+    // Haal de formulier-ID's op uit de opties
+    $aanmelden_id = intval(get_option('esm_cf7_aanmelden_form_id'));
+    $afmelden_id  = intval(get_option('esm_cf7_afmelden_form_id'));
+    // Als het huidige formulier een van deze is, schakel AJAX uit.
+    if ( in_array( $contact_form->id(), array($aanmelden_id, $afmelden_id) ) ) {
+        return false;
+    }
+    return $use_ajax;
+}
+
 // Validatiefilter voor het veld 'update_password' in CF7
 add_filter('wpcf7_validate_text*', 'esm_cf7_custom_validate_update_password', 20, 2);
 function esm_cf7_custom_validate_update_password($result, $tag) {
@@ -899,7 +914,7 @@ function esm_enqueue_huurders_assets() {
     ));
 }
 add_action( 'wp_enqueue_scripts', 'esm_enqueue_huurders_assets' );
-    
+
 function esm_generate_qrcode_zip_ajax() {
     // Controleer of de gebruiker de juiste rechten heeft.
     if ( ! current_user_can( 'manage_options' ) ) {
