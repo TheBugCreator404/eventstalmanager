@@ -867,13 +867,15 @@ function esm_get_box_data_ajax() {
        // Bepaal welke actie beschikbaar is
        $allowed_aanmelden = in_array($box->current_status, get_option('esm_allowed_aanmelden', array()));
        $allowed_afmelden = in_array($box->current_status, get_option('esm_allowed_afmelden', array()));
-       if($allowed_aanmelden){
-           echo '<p>Aanmelden beschikbaar.</p>';
-       } elseif($allowed_afmelden){
-           echo '<p>Afmelden beschikbaar.</p>';
-       } else {
-           echo '<p>Geen actie beschikbaar voor de huidige status.</p>';
-       }
+       if ( in_array($box->current_status, $allowed_aanmelden) && !empty($cf7_aanmelden_id) ) {
+            echo '<h3>Aanmelden</h3>';
+            echo do_shortcode('[contact-form-7 id="' . intval($cf7_aanmelden_id) . '"]');
+        } elseif ( in_array($box->current_status, $allowed_afmelden) && !empty($cf7_afmelden_id) ) {
+            echo '<h3>Afmelden</h3>';
+            echo do_shortcode('[contact-form-7 id="' . intval($cf7_afmelden_id) . '"]');
+        } else {
+            echo '<p>Geen actie beschikbaar voor de huidige status.</p>';
+        }
        ?>
     </div>
     <?php
