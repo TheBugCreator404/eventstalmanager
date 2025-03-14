@@ -853,22 +853,32 @@ function esm_get_box_data_ajax() {
         );
     }
     
-    // Bepaal of aanmelden of afmelden toegestaan is
-    $allowed_aanmelden = in_array($box->current_status, get_option('esm_allowed_aanmelden', array()));
-    $allowed_afmelden = in_array($box->current_status, get_option('esm_allowed_afmelden', array()));
-    
-    $data = array(
-         'stalgang'       => $stalgang,
-         'boxnummer'      => $boxnummer,
-         'current_status' => $box->current_status,
-         'previous_status'=> $box->previous_status,
-         'last_modified'  => $box->last_modified,
-         'modified_by'    => $box->modified_by,
-         'allowed_aanmelden' => $allowed_aanmelden,
-         'allowed_afmelden'  => $allowed_afmelden,
-    );
-    
-    wp_send_json_success($data);
+    ob_start();
+    ?>
+    <div class="esm-huurders">
+       <h2>Box Details</h2>
+       <p><strong>Stalgang:</strong> <?php echo esc_html($stalgang); ?></p>
+       <p><strong>Boxnummer:</strong> <?php echo esc_html($boxnummer); ?></p>
+       <p><strong>Huidige status:</strong> <?php echo esc_html($box->current_status); ?></p>
+       <p><strong>Vorige status:</strong> <?php echo esc_html($box->previous_status); ?></p>
+       <p><strong>Laatste wijziging:</strong> <?php echo esc_html($box->last_modified); ?></p>
+       <p><strong>Gewijzigd door:</strong> <?php echo esc_html($box->modified_by); ?></p>
+       <?php
+       // Bepaal welke actie beschikbaar is
+       $allowed_aanmelden = in_array($box->current_status, get_option('esm_allowed_aanmelden', array()));
+       $allowed_afmelden = in_array($box->current_status, get_option('esm_allowed_afmelden', array()));
+       if($allowed_aanmelden){
+           echo '<p>Aanmelden beschikbaar.</p>';
+       } elseif($allowed_afmelden){
+           echo '<p>Afmelden beschikbaar.</p>';
+       } else {
+           echo '<p>Geen actie beschikbaar voor de huidige status.</p>';
+       }
+       ?>
+    </div>
+    <?php
+    $html = ob_get_clean();
+    wp_send_json_success(array('html' => $html));
 }
 add_action('wp_ajax_esm_get_box_data', 'esm_get_box_data_ajax');
 add_action('wp_ajax_nopriv_esm_get_box_data', 'esm_get_box_data_ajax');
