@@ -528,7 +528,17 @@ function esm_huurders_shortcode() {
     ob_start();
     ?>
     <div id="esm-huurders-content">
-         <p>Bezig met laden…</p>
+         <!-- Container voor de boxgegevens, die via AJAX ingevuld wordt -->
+         <div id="box-details">
+             <p>Bezig met laden…</p>
+         </div>
+         <!-- CF7 formulieren; standaard verborgen -->
+         <div id="cf7-aanmelden" style="display: none;">
+             <?php echo do_shortcode('[contact-form-7 id="' . intval(get_option('esm_cf7_aanmelden_form_id')) . '"]'); ?>
+         </div>
+         <div id="cf7-afmelden" style="display: none;">
+             <?php echo do_shortcode('[contact-form-7 id="' . intval(get_option('esm_cf7_afmelden_form_id')) . '"]'); ?>
+         </div>
     </div>
     <?php
     return ob_get_clean();
@@ -843,36 +853,22 @@ function esm_get_box_data_ajax() {
         );
     }
     
-    ob_start();
-    ?>
-    <div class="esm-huurders">
-       <h2>Box Details</h2>
-       <p><strong>Stalgang:</strong> <?php echo esc_html($stalgang); ?></p>
-       <p><strong>Boxnummer:</strong> <?php echo esc_html($boxnummer); ?></p>
-       <p><strong>Huidige status:</strong> <?php echo esc_html($box->current_status); ?></p>
-       <p><strong>Vorige status:</strong> <?php echo esc_html($box->previous_status); ?></p>
-       <p><strong>Laatste wijziging:</strong> <?php echo esc_html($box->last_modified); ?></p>
-       <p><strong>Gewijzigd door:</strong> <?php echo esc_html($box->modified_by); ?></p>
-       <?php
-       $allowed_aanmelden = get_option('esm_allowed_aanmelden', array());
-       $allowed_afmelden = get_option('esm_allowed_afmelden', array());
-       $cf7_aanmelden_id = get_option('esm_cf7_aanmelden_form_id', '');
-       $cf7_afmelden_id = get_option('esm_cf7_afmelden_form_id', '');
-       
-       if(in_array($box->current_status, $allowed_aanmelden) && !empty($cf7_aanmelden_id)){
-           echo '<h3>Aanmelden</h3>';
-           echo do_shortcode('[contact-form-7 id="' . intval($cf7_aanmelden_id) . '"]');
-       } elseif(in_array($box->current_status, $allowed_afmelden) && !empty($cf7_afmelden_id)){
-           echo '<h3>Afmelden</h3>';
-           echo do_shortcode('[contact-form-7 id="' . intval($cf7_afmelden_id) . '"]');
-       } else {
-           echo '<p>Geen actie beschikbaar voor de huidige status.</p>';
-       }
-       ?>
-    </div>
-    <?php
-    $html = ob_get_clean();
-    wp_send_json_success(array('html' => $html));
+    // Bepaal of aanmelden of afmelden toegestaan is
+    $allowed_aanmelden = in_array($box->current_status, get_option('esm_allowed_aanmelden', array()));
+    $allowed_afmelden = in_array($box->current_status, get_option('esm_allowed_afmelden', array()));
+    
+    $data = array(
+         'stalgang'       => $stalgang,
+         'boxnummer'      => $boxnummer,
+         'current_status' => $box->current_status,
+         'previous_status'=> $box->previous_status,
+         'last_modified'  => $box->last_modified,
+         'modified_by'    => $box->modified_by,
+         'allowed_aanmelden' => $allowed_aanmelden,
+         'allowed_afmelden'  => $allowed_afmelden,
+    );
+    
+    wp_send_json_success($data);
 }
 add_action('wp_ajax_esm_get_box_data', 'esm_get_box_data_ajax');
 add_action('wp_ajax_nopriv_esm_get_box_data', 'esm_get_box_data_ajax');
@@ -885,7 +881,7 @@ function esm_enqueue_huurders_assets() {
     ));
 }
 add_action( 'wp_enqueue_scripts', 'esm_enqueue_huurders_assets' );
-
+    
 function esm_generate_qrcode_zip_ajax() {
     // Controleer of de gebruiker de juiste rechten heeft.
     if ( ! current_user_can( 'manage_options' ) ) {
