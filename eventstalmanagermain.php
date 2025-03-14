@@ -905,7 +905,7 @@ function esm_get_box_data_ajax() {
     while (ob_get_level() > 0) {
         ob_end_clean();
     }
-    
+    header('Content-Type: application/json; charset=utf-8');
     wp_send_json_success(array('html' => $html));
     exit;
 }
