@@ -844,6 +844,12 @@ function esm_cf7_custom_validate_update_password($result, $tag) {
     return $result;
 }
 
+add_filter('wpcf7_form_action_url', 'esm_remove_cf7_hash');
+function esm_remove_cf7_hash($url) {
+    return strtok($url, '#'); // retourneert de URL zonder hash
+}
+
+
 /**
  * AJAX-handler om boxgegevens op te halen.
  * Verwacht GET-parameters: 'stal' en 'box'
