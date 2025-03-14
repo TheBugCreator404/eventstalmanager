@@ -853,6 +853,14 @@ function esm_get_box_data_ajax() {
         );
     }
     
+    // Definieer de CF7 formulier ID's
+    $cf7_aanmelden_id = get_option('esm_cf7_aanmelden_form_id', '');
+    $cf7_afmelden_id  = get_option('esm_cf7_afmelden_form_id', '');
+    
+    // Bepaal of aanmelden/afmelden toegestaan is (in_array geeft hier een boolean)
+    $allowed_aanmelden = in_array($box->current_status, get_option('esm_allowed_aanmelden', array()));
+    $allowed_afmelden  = in_array($box->current_status, get_option('esm_allowed_afmelden', array()));
+    
     ob_start();
     ?>
     <div class="esm-huurders">
@@ -864,18 +872,16 @@ function esm_get_box_data_ajax() {
        <p><strong>Laatste wijziging:</strong> <?php echo esc_html($box->last_modified); ?></p>
        <p><strong>Gewijzigd door:</strong> <?php echo esc_html($box->modified_by); ?></p>
        <?php
-       // Bepaal welke actie beschikbaar is
-       $allowed_aanmelden = in_array($box->current_status, get_option('esm_allowed_aanmelden', array()));
-       $allowed_afmelden = in_array($box->current_status, get_option('esm_allowed_afmelden', array()));
-       if ( in_array($box->current_status, $allowed_aanmelden) && !empty($cf7_aanmelden_id) ) {
+       // Toon het juiste CF7 formulier op basis van de huidige status
+       if ( $allowed_aanmelden && !empty($cf7_aanmelden_id) ) {
             echo '<h3>Aanmelden</h3>';
             echo do_shortcode('[contact-form-7 id="' . intval($cf7_aanmelden_id) . '"]');
-        } elseif ( in_array($box->current_status, $allowed_afmelden) && !empty($cf7_afmelden_id) ) {
+       } elseif ( $allowed_afmelden && !empty($cf7_afmelden_id) ) {
             echo '<h3>Afmelden</h3>';
             echo do_shortcode('[contact-form-7 id="' . intval($cf7_afmelden_id) . '"]');
-        } else {
+       } else {
             echo '<p>Geen actie beschikbaar voor de huidige status.</p>';
-        }
+       }
        ?>
     </div>
     <?php
