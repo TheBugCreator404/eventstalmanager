@@ -830,7 +830,7 @@ function esm_fix_cf7_form_action_url($url, $contact_form = null) {
 
 /**
  * Schakel CF7 AJAX uit voor de formulieren die in de shortcode worden gebruikt.
- */
+*//*
 add_filter('wpcf7_use_ajax', 'esm_disable_cf7_ajax', 10, 2);
 function esm_disable_cf7_ajax($use_ajax, $contact_form) {
     // Haal de formulier-ID's op uit de opties
@@ -841,7 +841,7 @@ function esm_disable_cf7_ajax($use_ajax, $contact_form) {
         return false;
     }
     return $use_ajax;
-}
+}*/
 
 // Validatiefilter voor het veld 'update_password' in CF7
 add_filter('wpcf7_validate_text*', 'esm_cf7_custom_validate_update_password', 20, 2);
