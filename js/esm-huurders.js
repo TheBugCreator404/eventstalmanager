@@ -4,6 +4,9 @@ window.onload = function() {
     var box = params.get('box');
     console.log("GET parameter 'stal':", stal);
     console.log("GET parameter 'box':", box);
+    // Haal het element op
+    var boxDetailsEl = document.getElementById('box-details');
+    console.log("Box-details element:", boxDetailsEl);
     
     if (stal && box) {
          var url = esm_vars.ajaxUrl + '?action=esm_get_box_data&stal=' + encodeURIComponent(stal) + '&box=' + encodeURIComponent(box);
