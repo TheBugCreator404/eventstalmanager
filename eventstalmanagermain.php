@@ -887,46 +887,27 @@ function esm_get_box_data_ajax() {
         );
     }
     
-    // Definieer de CF7 formulier ID's
+    // Haal de formulier-ID's op (indien nodig voor de logica)
     $cf7_aanmelden_id = get_option('esm_cf7_aanmelden_form_id', '');
     $cf7_afmelden_id  = get_option('esm_cf7_afmelden_form_id', '');
     
-    // Bepaal of aanmelden/afmelden toegestaan is (in_array geeft hier een boolean)
+    // Controleer of aanmelden/afmelden is toegestaan; in_array retourneert een boolean.
     $allowed_aanmelden = in_array($box->current_status, get_option('esm_allowed_aanmelden', array()));
     $allowed_afmelden  = in_array($box->current_status, get_option('esm_allowed_afmelden', array()));
     
-    ob_start();
-    ?>
-    <div class="esm-huurders">
-       <h2>Box Details</h2>
-       <p><strong>Stalgang:</strong> <?php echo esc_html($stalgang); ?></p>
-       <p><strong>Boxnummer:</strong> <?php echo esc_html($boxnummer); ?></p>
-       <p><strong>Huidige status:</strong> <?php echo esc_html($box->current_status); ?></p>
-       <p><strong>Vorige status:</strong> <?php echo esc_html($box->previous_status); ?></p>
-       <p><strong>Laatste wijziging:</strong> <?php echo esc_html($box->last_modified); ?></p>
-       <p><strong>Gewijzigd door:</strong> <?php echo esc_html($box->modified_by); ?></p>
-       <?php
-       // Toon het juiste CF7 formulier op basis van de huidige status
-       if ( $allowed_aanmelden && !empty($cf7_aanmelden_id) ) {
-            echo '<h3>Aanmelden</h3>';
-            echo do_shortcode('[contact-form-7 id="' . intval($cf7_aanmelden_id) . '"]');
-       } elseif ( $allowed_afmelden && !empty($cf7_afmelden_id) ) {
-            echo '<h3>Afmelden</h3>';
-            echo do_shortcode('[contact-form-7 id="' . intval($cf7_afmelden_id) . '"]');
-       } else {
-            echo '<p>Geen actie beschikbaar voor de huidige status.</p>';
-       }
-       ?>
-    </div>
-    <?php
-    $html = ob_get_clean();
-
-    while (ob_get_level() > 0) {
-        ob_end_clean();
-    }
-    header('Content-Type: application/json; charset=utf-8');
-    wp_send_json_success(array('html' => $html));
-    exit;
+    // Bouw een data-array met de benodigde waarden.
+    $data = array(
+         'stalgang'       => $stalgang,
+         'boxnummer'      => $boxnummer,
+         'current_status' => $box->current_status,
+         'previous_status'=> $box->previous_status,
+         'last_modified'  => $box->last_modified,
+         'modified_by'    => $box->modified_by,
+         'allowed_aanmelden' => $allowed_aanmelden,
+         'allowed_afmelden'  => $allowed_afmelden,
+    );
+    
+    wp_send_json_success($data);
 }
 add_action('wp_ajax_esm_get_box_data', 'esm_get_box_data_ajax');
 add_action('wp_ajax_nopriv_esm_get_box_data', 'esm_get_box_data_ajax');

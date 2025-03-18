@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', function(){
          fetch(url)
          .then(response => response.json())
          .then(data => {
-              console.log("AJAX response:", data);
               if(data.success) {
                   var info = data.data;
                   var detailsHtml = '<h2>Box Details</h2>' +
@@ -23,6 +22,7 @@ document.addEventListener('DOMContentLoaded', function(){
                       '<p><strong>Gewijzigd door:</strong> ' + info.modified_by + '</p>';
                   document.getElementById('box-details').innerHTML = detailsHtml;
                   
+                  // Toon het juiste CF7 formulier op basis van de toegestane acties:
                   if(info.allowed_aanmelden) {
                       document.getElementById('cf7-aanmelden').style.display = 'block';
                       document.getElementById('cf7-afmelden').style.display = 'none';
