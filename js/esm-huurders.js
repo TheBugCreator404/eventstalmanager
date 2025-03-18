@@ -21,20 +21,8 @@ document.addEventListener('DOMContentLoaded', function(){
                       '<p><strong>Vorige status:</strong> ' + info.previous_status + '</p>' +
                       '<p><strong>Laatste wijziging:</strong> ' + info.last_modified + '</p>' +
                       '<p><strong>Gewijzigd door:</strong> ' + info.modified_by + '</p>';
-
-                      var boxDetailsEl = document.getElementById('box-details');
-                      console.log("Box-details element:", boxDetailsEl);
-                      if(boxDetailsEl) {
-                          boxDetailsEl.innerHTML = detailsHtml;
-                      } else {
-                          console.error("Element met id 'box-details' niet gevonden.");
-                      }
-
                   document.getElementById('box-details').innerHTML = detailsHtml;
                   
-                  
-                  
-
                   if(info.allowed_aanmelden) {
                       document.getElementById('cf7-aanmelden').style.display = 'block';
                       document.getElementById('cf7-afmelden').style.display = 'none';
