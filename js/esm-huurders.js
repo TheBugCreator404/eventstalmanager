@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function(){
+window.onload = function() {
     var params = new URLSearchParams(window.location.search);
     var stal = params.get('stal');
     var box = params.get('box');
@@ -44,4 +44,4 @@ document.addEventListener('DOMContentLoaded', function(){
     } else {
          document.getElementById('esm-huurders-content').innerHTML = '<p>Fout: Geen stal of box parameter gevonden in de URL.</p>';
     }
-});
+};
