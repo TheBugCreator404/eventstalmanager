@@ -528,7 +528,7 @@ function esm_huurders_shortcode() {
     ob_start();
     ?>
     <div id="esm-huurders-content">
-         <!-- Container voor de boxgegevens, die via AJAX ingevuld wordt -->
+         <!-- Container voor de boxgegevens -->
          <div id="box-details">
              <p>Bezig met laden…</p>
          </div>
