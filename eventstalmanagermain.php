@@ -218,6 +218,13 @@ function esm_settings_page() {
         $update_password = isset($_POST['esm_update_password']) ? sanitize_text_field($_POST['esm_update_password']) : '';
         update_option('esm_update_password', $update_password);
 
+        if ( isset($_POST['esm_dashboard_refresh_interval']) ) {
+            // Sanitize de input, bijvoorbeeld als een integer
+            $refresh_interval = intval($_POST['esm_dashboard_refresh_interval']);
+            // Sla de instelling op, bijvoorbeeld standaard 30000 ms als er geen waarde is
+            update_option('esm_dashboard_refresh_interval', $refresh_interval);
+        }
+        
         $qr_redirect_page = isset($_POST['esm_qr_redirect_page']) ? sanitize_text_field($_POST['esm_qr_redirect_page']) : '';
         update_option('esm_qr_redirect_page', $qr_redirect_page);
 
@@ -319,6 +326,15 @@ function esm_settings_page() {
                 </label>
             </p>
 
+            // In je settings pagina:
+            ?>
+            <p>
+                <label>Dashboard refresh interval (in milliseconden):
+                    <input type="number" name="esm_dashboard_refresh_interval" value="<?php echo esc_attr(get_option('esm_dashboard_refresh_interval', '30000')); ?>" />
+                </label>
+            </p>
+            <?php
+            // Vergeet niet dit veld op te slaan via update_option.
             
             <h2>CSS Klassen en Tags</h2>
             <p>De volgende CSS klassen worden gebruikt in de front-end (voor eigen CSS-aanpassingen):</p>
@@ -464,59 +480,11 @@ function esm_shortcodes_page() {
 // Toont een overzicht met de boxen per stalgang in een grid.
 function esm_dashboard_shortcode() {
     ob_start();
-    
-    $stallen = get_option('esm_stallen', array());
-    $status_colors = get_option('esm_status_colors', array());
-    global $wpdb;
-    $table_name = $wpdb->prefix . 'eventstable_manager';
-    
-    echo '<div class="esm-dashboard" style="display:flex; gap:20px;">';
-    foreach($stallen as $config){
-        $stalgang = $config['stalgang'];
-        $box_range = $config['box_range'];
-        $kolom = intval($config['kolom']);
-        
-        list($start, $end) = explode('-', $box_range);
-        $start = intval($start);
-        $end = intval($end);
-        $total_boxes = $end - $start + 1;
-        $rows = ceil($total_boxes / $kolom);
-        
-        echo '<div class="esm-stalgang-container">';
-        echo '<h3 class="esm-stalgang-header">Stalgang: ' . esc_html($stalgang) . '</h3>';
-        echo '<table class="esm-stalgang-table" border="1" cellspacing="0" cellpadding="5">';
-        
-        $boxes = range($start, $end);
-        $grid = array();
-        for ($i = 0; $i < $rows; $i++) {
-            $grid[$i] = array();
-            for($j = 0; $j < $kolom; $j++){
-                $index = $i + $j * $rows;
-                $grid[$i][] = isset($boxes[$index]) ? $boxes[$index] : '';
-            }
-        }
-        
-        foreach($grid as $row){
-            echo '<tr>';
-            foreach($row as $boxnummer){
-                if($boxnummer !== ''){
-                    $box = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE stalgang = %s AND boxnummer = %d", $stalgang, $boxnummer));
-                    if(!$box){
-                        $box = (object) array('current_status' => 'n.v.t.');
-                    }
-                    $bg_color = isset($status_colors[$box->current_status]) ? $status_colors[$box->current_status] : '#ffffff';
-                    echo '<td class="esm-box" data-stalgang="' . esc_attr($stalgang) . '" data-boxnummer="' . esc_attr($boxnummer) . '" style="background-color:' . esc_attr($bg_color) . '; cursor:pointer;">' . esc_html($boxnummer) . '</td>';
-                } else {
-                    echo '<td></td>';
-                }
-            }
-            echo '</tr>';
-        }
-        echo '</table>';
-        echo '</div>';
-    }
-    echo '</div>';
-
+    ?>
+    <div id="esm-dashboard-content">
+         <?php echo esm_render_dashboard(); // Toon initiale data bij paginalaad ?>
+    </div>
+    <?php
     return ob_get_clean();
 }
 add_shortcode('eventstable_dashboard', 'esm_dashboard_shortcode');
@@ -920,6 +888,97 @@ function esm_enqueue_huurders_assets() {
     ));
 }
 add_action( 'wp_enqueue_scripts', 'esm_enqueue_huurders_assets' );
+
+
+/**
+ * AJAX-handler om de dashboard-data op te halen.
+ * Deze functie roept een aparte functie aan die de dashboard HTML genereert.
+ */
+function esm_get_dashboard_data_ajax() {
+    // Roep de functie aan die de dashboard-HTML samenstelt.
+    // Als je al een dashboard-renderfunctie hebt (bijv. esm_render_dashboard()),
+    // gebruik die dan. Anders kun je hier de huidige code van je dashboard-shortcode neerzetten.
+    $html = esm_render_dashboard(); // Zorg dat deze functie de HTML van het dashboard retourneert.
+    
+    // Zorg ervoor dat er geen outputbuffers met onbedoelde output zijn
+    while (ob_get_level() > 0) {
+        ob_end_clean();
+    }
+    wp_send_json_success(array('html' => $html));
+    exit;
+}
+add_action('wp_ajax_esm_get_dashboard_data', 'esm_get_dashboard_data_ajax');
+add_action('wp_ajax_nopriv_esm_get_dashboard_data', 'esm_get_dashboard_data_ajax');
+
+function esm_render_dashboard() {
+    ob_start();
+    
+    $stallen = get_option('esm_stallen', array());
+    $status_colors = get_option('esm_status_colors', array());
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'eventstable_manager';
+    
+    echo '<div class="esm-dashboard" style="display:flex; gap:20px;">';
+    foreach($stallen as $config){
+        $stalgang = $config['stalgang'];
+        $box_range = $config['box_range'];
+        $kolom = intval($config['kolom']);
+        
+        list($start, $end) = explode('-', $box_range);
+        $start = intval($start);
+        $end = intval($end);
+        $total_boxes = $end - $start + 1;
+        $rows = ceil($total_boxes / $kolom);
+        
+        echo '<div class="esm-stalgang-container">';
+        echo '<h3 class="esm-stalgang-header">Stalgang: ' . esc_html($stalgang) . '</h3>';
+        echo '<table class="esm-stalgang-table" border="1" cellspacing="0" cellpadding="5">';
+        
+        $boxes = range($start, $end);
+        $grid = array();
+        for ($i = 0; $i < $rows; $i++) {
+            $grid[$i] = array();
+            for($j = 0; $j < $kolom; $j++){
+                $index = $i + $j * $rows;
+                $grid[$i][] = isset($boxes[$index]) ? $boxes[$index] : '';
+            }
+        }
+        
+        foreach($grid as $row){
+            echo '<tr>';
+            foreach($row as $boxnummer){
+                if($boxnummer !== ''){
+                    $box = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE stalgang = %s AND boxnummer = %d", $stalgang, $boxnummer));
+                    if(!$box){
+                        $box = (object) array('current_status' => 'n.v.t.');
+                    }
+                    $bg_color = isset($status_colors[$box->current_status]) ? $status_colors[$box->current_status] : '#ffffff';
+                    echo '<td class="esm-box" data-stalgang="' . esc_attr($stalgang) . '" data-boxnummer="' . esc_attr($boxnummer) . '" style="background-color:' . esc_attr($bg_color) . '; cursor:pointer;">' . esc_html($boxnummer) . '</td>';
+                } else {
+                    echo '<td></td>';
+                }
+            }
+            echo '</tr>';
+        }
+        echo '</table>';
+        echo '</div>';
+    }
+    echo '</div>';
+
+    return ob_get_clean();
+}
+
+function esm_enqueue_dashboard_assets() {
+    if ( is_admin() ) return;
+    wp_enqueue_script( 'esm-dashboard-script', plugin_dir_url( __FILE__ ) . 'js/esm-dashboard.js', array('jquery'), '1.0', true );
+    // Stel het refresh interval in (bijvoorbeeld in milliseconden, standaard 30000 ms)
+    wp_localize_script('esm-dashboard-script', 'esm_dashboard_vars', array(
+         'ajaxUrl' => admin_url('admin-ajax.php'),
+         'refreshInterval' => get_option('esm_dashboard_refresh_interval', '30000')
+    ));
+}
+add_action( 'wp_enqueue_scripts', 'esm_enqueue_dashboard_assets' );
+
 
 function esm_generate_qrcode_zip_ajax() {
     // Controleer of de gebruiker de juiste rechten heeft.
