@@ -3,22 +3,31 @@ document.addEventListener('DOMContentLoaded', function(){
   var closeBtn = document.querySelector(".esm-close");
 
   // Voeg een click-event toe aan alle elementen met de class .esm-box
-  document.querySelectorAll('.esm-box').forEach(function(box) {
-    box.addEventListener('click', function(){
-      var stalgang = this.getAttribute('data-stalgang');
-      var boxnummer = this.getAttribute('data-boxnummer');
-      // Sla de waarden op in globale variabelen
-      window.esm_modal_stalgang = stalgang;
-      window.esm_modal_boxnummer = boxnummer;
-
-      // Vul de modal met dynamische inhoud (bijvoorbeeld boxdetails)
-      document.getElementById("esm-modal-body").innerHTML = 
-         '<h2>Box ' + boxnummer + ' (Stalgang ' + stalgang + ')</h2>' +
-         '<p>Hier komen de details van de box.</p>' +
-         '<button id="esm-change-status-btn">Status wijzigen</button>';
-      modal.style.display = "block";
-    });
-  });
+  document.addEventListener('click', function(e) {
+    // Zoek naar een ouder-element met de class .esm-box van het geklikte element
+    var box = e.target.closest('.esm-box');
+    if (box) {
+        // Voorkom dat andere handlers de click verder verwerken (optioneel)
+        // e.preventDefault();
+        
+        // Haal de benodigde data op
+        var stalgang = box.getAttribute('data-stalgang');
+        var boxnummer = box.getAttribute('data-boxnummer');
+        
+        // Zorg dat je de pop-up elementen hebt
+        var modal = document.getElementById('esm-modal');
+        var modalBody = document.getElementById('esm-modal-body');
+        
+        // Vul de pop-up met dynamische inhoud, bijvoorbeeld:
+        modalBody.innerHTML = 
+            '<h2>Box ' + boxnummer + ' (Stalgang ' + stalgang + ')</h2>' +
+            '<p>Hier komen de details van de box.</p>' +
+            '<button id="esm-change-status-btn">Status wijzigen</button>';
+        
+        // Toon de pop-up
+        modal.style.display = "block";
+    }
+});
 
   // Gebruik event delegation voor de "Status wijzigen" knop
   document.addEventListener('click', function(e) {
