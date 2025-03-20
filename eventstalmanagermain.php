@@ -326,15 +326,11 @@ function esm_settings_page() {
                 </label>
             </p>
 
-            // In je settings pagina:
-            ?>
             <p>
                 <label>Dashboard refresh interval (in milliseconden):
                     <input type="number" name="esm_dashboard_refresh_interval" value="<?php echo esc_attr(get_option('esm_dashboard_refresh_interval', '30000')); ?>" />
                 </label>
             </p>
-            <?php
-            // Vergeet niet dit veld op te slaan via update_option.
             
             <h2>CSS Klassen en Tags</h2>
             <p>De volgende CSS klassen worden gebruikt in de front-end (voor eigen CSS-aanpassingen):</p>
