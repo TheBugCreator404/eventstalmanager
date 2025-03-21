@@ -127,7 +127,7 @@ function esm_bulk_update_page() {
                   $wpdb->update($table_name, array(
                       'previous_status' => $existing->current_status,
                       'current_status' => $new_status,
-                      'last_modified' => current_time('mysql')
+                      'last_modified' => current_time('mysql'),
                       'modified_by'   => 'admin'
                   ), array(
                       'stalgang' => $stalgang,
