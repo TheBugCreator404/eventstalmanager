@@ -671,6 +671,8 @@ function esm_cf7_update_handler( $contact_form ) {
     // Zoek naar een bestaand record voor deze stalgang en dit boxnummer.
     $box = $wpdb->get_row( $wpdb->prepare("SELECT * FROM $table_name WHERE stalgang = %s AND boxnummer = %d", $stalgang, $boxnummer) );
     
+    error_log("POST data: " . print_r($_POST, true));
+
     // Voer een update of insert uit afhankelijk van of het record al bestaat.
     if( $box ) {
          // Update het bestaande record: sla de huidige status op als 'previous_status' en werk de status bij.
