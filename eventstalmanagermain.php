@@ -128,6 +128,7 @@ function esm_bulk_update_page() {
                       'previous_status' => $existing->current_status,
                       'current_status' => $new_status,
                       'last_modified' => current_time('mysql')
+                      'modified_by'   => 'admin'
                   ), array(
                       'stalgang' => $stalgang,
                       'boxnummer' => $i
