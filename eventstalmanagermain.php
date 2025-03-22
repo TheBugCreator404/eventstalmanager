@@ -499,9 +499,11 @@ function esm_huurders_shortcode() {
          </div>
          <!-- CF7 formulieren; standaard verborgen -->
          <div id="cf7-aanmelden" style="display: none;">
+         <h2>Aanmelden</h2>
              <?php echo do_shortcode('[contact-form-7 id="' . intval(get_option('esm_cf7_aanmelden_form_id')) . '"]'); ?>
          </div>
          <div id="cf7-afmelden" style="display: none;">
+            <h2>Afmelden</h2>
              <?php echo do_shortcode('[contact-form-7 id="' . intval(get_option('esm_cf7_afmelden_form_id')) . '"]'); ?>
          </div>
     </div>
