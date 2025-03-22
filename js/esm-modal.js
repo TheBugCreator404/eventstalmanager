@@ -1,34 +1,59 @@
 // Event delegation voor klikken op boxen
 document.addEventListener('click', function(e) {
-  // Controleer of een element met de class "esm-box" is aangeklikt
+  // Gebruik event delegation: als een element met class 'esm-box' wordt geklikt
   var boxElement = e.target.closest('.esm-box');
   if (boxElement) {
-      // Lees de data-attributen uit
+      // Haal de waarden uit de data-attributen (als fallback, maar deze gaan we via AJAX ophalen)
       var stalgang = boxElement.getAttribute('data-stalgang');
       var boxnummer = boxElement.getAttribute('data-boxnummer');
-      console.log("Box clicked:", stalgang, boxnummer);
+      console.log("Box clicked: ", stalgang, boxnummer);
       
-      // Sla de waarden op in globale variabelen
       window.esm_modal_stalgang = stalgang;
       window.esm_modal_boxnummer = boxnummer;
       
-      // Vul de modal met basisinformatie
-      var modalBody = document.getElementById('esm-modal-body');
-      if (modalBody) {
-          modalBody.innerHTML = 
-              '<h2>Box ' + boxnummer + ' (Stalgang ' + stalgang + ')</h2>' +
-              '<p>Hier komen de details van de box.</p>' +
-              '<button id="esm-change-status-btn">Status wijzigen</button>';
-      }
+      // Bouw de AJAX URL op
+      var ajaxUrl = esm_vars.ajaxUrl; // Deze variabele moet via wp_localize_script worden meegegeven
+      var url = ajaxUrl + '?action=esm_get_box_data&stal=' + encodeURIComponent(stalgang) + '&box=' + encodeURIComponent(boxnummer);
+      console.log("AJAX URL:", url);
       
-      // Toon de modal
-      var modal = document.getElementById('esm-modal');
-      if (modal) {
-          modal.style.display = 'block';
-      }
+      // Doe de AJAX-aanroep om de meest actuele gegevens op te halen
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                var info = data.data;
+                // Bouw de HTML voor de pop-up op basis van de response
+                var modalHtml = `
+                    <h2>Box ${info.boxnummer} (Stalgang ${info.stalgang})</h2>
+                    <p><strong>Status:</strong> ${info.current_status}</p>
+                    <p><strong>Vorige status:</strong> ${info.previous_status}</p>
+                    <p><strong>Laatste wijziging:</strong> ${info.last_modified}</p>
+                    <p><strong>Gewijzigd door:</strong> ${info.modified_by}</p>
+                    <button id="esm-change-status-btn">Status wijzigen</button>
+                `;
+                var modalBody = document.getElementById('esm-modal-body');
+                if (modalBody) {
+                    modalBody.innerHTML = modalHtml;
+                }
+                
+                // Toon de modal
+                var modal = document.getElementById('esm-modal');
+                if (modal) {
+                    modal.style.display = 'block';
+                }
+                
+                // Afhankelijk van de toegestane acties kun je het updateformulier inladen
+                // Bijvoorbeeld: als aanmelden toegestaan is, laad dan de CF7-updateform (als je dat via modal_vars hebt doorgegeven)
+                // Of je kunt hier extra logica toevoegen om het formulier te tonen
+            } else {
+                console.error("AJAX error:", data.data);
+            }
+        })
+        .catch(error => {
+            console.error("Fetch error:", error);
+        });
   }
 });
-
 // Event delegation voor de sluit-knop en buiten de modal klikken
 document.addEventListener('click', function(e) {
   // Als het element met class "esm-close" wordt aangeklikt of als er buiten de modal wordt geklikt:
