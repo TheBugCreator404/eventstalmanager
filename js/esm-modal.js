@@ -10,7 +10,7 @@ document.addEventListener('click', function(e) {
       
       window.esm_modal_stalgang = stalgang;
       window.esm_modal_boxnummer = boxnummer;
-      
+
       // Bouw de AJAX URL op
       var ajaxUrl = esm_vars.ajaxUrl; // Deze variabele moet via wp_localize_script worden meegegeven
       var url = ajaxUrl + '?action=esm_get_box_data&stal=' + encodeURIComponent(stalgang) + '&box=' + encodeURIComponent(boxnummer);
@@ -24,7 +24,7 @@ document.addEventListener('click', function(e) {
                 var info = data.data;
                 // Bouw de HTML voor de pop-up op basis van de response
                 var modalHtml = `
-                    <h2>Box ${info.boxnummer} (Stalgang ${info.stalgang})</h2>
+                    <h2>Box ${info.boxnummer} Stalgang ${info.stalgang}</h2>
                     <p><strong>Status:</strong> ${info.current_status}</p>
                     <p><strong>Vorige status:</strong> ${info.previous_status}</p>
                     <p><strong>Laatste wijziging:</strong> ${info.last_modified}</p>
