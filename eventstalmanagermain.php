@@ -777,7 +777,9 @@ function esm_enqueue_modal_assets() {
     $cf7_update_form = do_shortcode("[contact-form-7 id='" . intval(get_option("esm_cf7_update_form_id")) . "']");
     $cf7_update_form = apply_filters('wpcf7_form_elements', $cf7_update_form);
     wp_localize_script('esm-modal-script', 'esm_modal_vars', array(
-        'cf7UpdateForm' => $cf7_update_form
+        'ajaxUrl' => admin_url('admin-ajax.php'),
+        'cf7UpdateForm' => do_shortcode("[contact-form-7 id='" . intval(get_option("esm_cf7_update_form_id")) . "']")
+//        'cf7UpdateForm' => $cf7_update_form
     ));
 }
 add_action( 'wp_enqueue_scripts', 'esm_enqueue_modal_assets' );
