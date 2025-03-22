@@ -683,6 +683,7 @@ function esm_cf7_update_handler( $contact_form ) {
                 'previous_status' => $box->current_status,
                 'current_status'  => $new_status,
                 'last_modified'   => current_time('mysql')
+                'modified_by'     => 'admin'
              ),
              array(
                 'stalgang'  => $stalgang,
@@ -702,6 +703,7 @@ function esm_cf7_update_handler( $contact_form ) {
              'current_status' => $new_status,
              'previous_status' => 'n.v.t.',
              'last_modified' => current_time('mysql')
+             'modified_by'     => 'admin'
          ));
          if ( $result === false ) {
              error_log("Insert mislukt voor stalgang: $stalgang, box: $boxnummer");
