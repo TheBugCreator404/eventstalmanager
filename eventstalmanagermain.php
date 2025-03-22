@@ -682,7 +682,7 @@ function esm_cf7_update_handler( $contact_form ) {
              array(
                 'previous_status' => $box->current_status,
                 'current_status'  => $new_status,
-                'last_modified'   => current_time('mysql')
+                'last_modified'   => current_time('mysql'),
                 'modified_by'     => 'admin'
              ),
              array(
@@ -702,7 +702,7 @@ function esm_cf7_update_handler( $contact_form ) {
              'boxnummer' => $boxnummer,
              'current_status' => $new_status,
              'previous_status' => 'n.v.t.',
-             'last_modified' => current_time('mysql')
+             'last_modified' => current_time('mysql'),
              'modified_by'     => 'admin'
          ));
          if ( $result === false ) {
