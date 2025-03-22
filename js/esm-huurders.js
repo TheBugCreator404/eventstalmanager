@@ -20,7 +20,7 @@ window.onload = function() {
                       '<p><strong>Stalgang:</strong> ' + info.stalgang + '</p>' +
                       '<p><strong>Boxnummer:</strong> ' + info.boxnummer + '</p>' +
                       '<p><strong>Huidige status:</strong> ' + info.current_status + '</p>' +
-                      '<p><strong>Vorige status:</strong> ' + info.previous_status + '</p>' +
+                      //'<p><strong>Vorige status:</strong> ' + info.previous_status + '</p>' +
                       '<p><strong>Laatste wijziging:</strong> ' + info.last_modified + '</p>' +
                       '<p><strong>Gewijzigd door:</strong> ' + info.modified_by + '</p>';
                   document.getElementById('box-details').innerHTML = detailsHtml;
