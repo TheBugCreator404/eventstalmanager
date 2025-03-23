@@ -155,8 +155,10 @@ function esm_bulk_update_page() {
          for ($i = $start; $i <= $end; $i++) {
              $existing = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE stalgang = %s AND boxnummer = %d", $stalgang, $i));
              if($existing) {
-                  $wpdb->update($table_name, array(
-                      'previous_status' => $existing->current_status,
+                  // Definieer oude status
+                  $old_status = $existing->current_status;
+                  $result = $wpdb->update($table_name, array(
+                      'previous_status' => $old_status,
                       'current_status' => $new_status,
                       'last_modified' => current_time('mysql'),
                       'modified_by'   => 'admin'
@@ -165,19 +167,21 @@ function esm_bulk_update_page() {
                       'boxnummer' => $i
                   ));
                   if($result !== false) {
-                    // Log de wijziging met type 'bulk edit'
-                    esm_log_modification($stalgang, $i, $new_status, $old_status, 'admin', 'bulk edit');
+                      // Log de wijziging met type 'bulk edit'
+                      esm_log_modification($stalgang, $i, $new_status, $old_status, 'admin', 'bulk edit');
                   }
              } else {
-                  $wpdb->insert($table_name, array(
+                  $old_status = 'n.v.t.'; // Aangezien er geen bestaand record is
+                  $result = $wpdb->insert($table_name, array(
                       'stalgang' => $stalgang,
                       'boxnummer' => $i,
                       'current_status' => $new_status,
                       'previous_status' => 'n.v.t.',
-                      'last_modified' => current_time('mysql')
+                      'last_modified' => current_time('mysql'),
+                      'modified_by'   => 'admin'
                   ));
                   if($result !== false) {
-                    esm_log_modification($stalgang, $i, $new_status, 'n.v.t.', 'admin', 'bulk edit');
+                      esm_log_modification($stalgang, $i, $new_status, $old_status, 'admin', 'bulk edit');
                   }
              }
          }
@@ -193,9 +197,7 @@ function esm_bulk_update_page() {
     $stallen = get_option('esm_stallen', array());
     echo '<p><label>Stalgang: <select name="stalgang" required>';
     if ( ! empty( $stallen ) ) {
-        // Loop door de stallen en gebruik de sleutel 'stalgang' als de waarde
         foreach ( $stallen as $row ) {
-            // Controleer of 'stalgang' bestaat in de rij
             if ( isset( $row['stalgang'] ) ) {
                 echo '<option value="' . esc_attr( $row['stalgang'] ) . '">' . esc_html( $row['stalgang'] ) . '</option>';
             }
@@ -216,6 +218,7 @@ function esm_bulk_update_page() {
     echo '</form>';
     echo '</div>';
 }
+
 
 
 // ----- INSTELLINGEN PAGINA -----
