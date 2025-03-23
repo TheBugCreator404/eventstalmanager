@@ -86,6 +86,15 @@ function esm_register_admin_menu() {
     );
     
     add_submenu_page(
+        'esm_main',              // Parent slug (pas dit aan naar jouw hoofdplugin-menu slug)
+        'Wijzigingslog',         // Paginatitel
+        'Wijzigingslog',         // Menutitel
+        'manage_options',        // Capability (alleen admin)
+        'esm_logs',              // Menu slug
+        'esm_render_logs_page'   // Callback-functie die de pagina weergeeft
+    );
+    
+    add_submenu_page(
         'esm_main',
         'Instellingen',
         'Instellingen',
@@ -163,6 +172,9 @@ function esm_bulk_update_page() {
                       'previous_status' => 'n.v.t.',
                       'last_modified' => current_time('mysql')
                   ));
+                  if($result !== false) {
+                    esm_log_modification($stalgang, $i, $new_status, 'n.v.t.', 'admin', 'bulk edit');
+                  }
              }
          }
          echo '<div class="updated"><p>Bulk update uitgevoerd voor Stalgang '. esc_html($stalgang) .' van box '. esc_html($box_range) .' naar status '. esc_html($new_status) .'.</p></div>';
@@ -733,7 +745,7 @@ function esm_cf7_update_handler( $contact_form ) {
          if ( $result !== false ) {
             esm_log_modification($stalgang, $boxnummer, $new_status, $old_status, 'admin', 'dashboard');
         }
-        
+
          if ( $result === false ) {
              error_log("Insert mislukt voor stalgang: $stalgang, box: $boxnummer");
          } else {
@@ -1136,4 +1148,52 @@ function esm_log_modification($stalgang, $boxnummer, $new_status, $old_status, $
          'modified_by' => $modified_by,
          'modification_type' => $modification_type
     ));
+}
+
+function esm_render_logs_page() {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'eventstable_log';
+
+    // Haal alle logs op (voor een eenvoudig voorbeeld zonder paginering)
+    $logs = $wpdb->get_results("SELECT * FROM $table_name ORDER BY datetime DESC");
+
+    ?>
+    <div class="wrap">
+        <h1>Wijzigingslog</h1>
+        <table class="wp-list-table widefat fixed striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Stalgang</th>
+                    <th>Boxnummer</th>
+                    <th>Nieuwe status</th>
+                    <th>Oude status</th>
+                    <th>Datum/Tijd</th>
+                    <th>Gewijzigd door</th>
+                    <th>Type wijziging</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if ($logs): ?>
+                    <?php foreach ($logs as $log): ?>
+                        <tr>
+                            <td><?php echo esc_html($log->id); ?></td>
+                            <td><?php echo esc_html($log->stalgang); ?></td>
+                            <td><?php echo esc_html($log->boxnummer); ?></td>
+                            <td><?php echo esc_html($log->new_status); ?></td>
+                            <td><?php echo esc_html($log->old_status); ?></td>
+                            <td><?php echo esc_html($log->datetime); ?></td>
+                            <td><?php echo esc_html($log->modified_by); ?></td>
+                            <td><?php echo esc_html($log->modification_type); ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <tr>
+                        <td colspan="8">Geen logs gevonden.</td>
+                    </tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+    <?php
 }
