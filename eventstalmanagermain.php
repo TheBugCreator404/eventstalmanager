@@ -729,6 +729,11 @@ function esm_cf7_update_handler( $contact_form ) {
              'last_modified' => current_time('mysql'),
              'modified_by'     => 'admin'
          ));
+
+         if ( $result !== false ) {
+            esm_log_modification($stalgang, $boxnummer, $new_status, $old_status, 'admin', 'dashboard');
+        }
+        
          if ( $result === false ) {
              error_log("Insert mislukt voor stalgang: $stalgang, box: $boxnummer");
          } else {
@@ -1108,3 +1113,27 @@ function esm_generate_box_qrcode($stalgang, $boxnummer) {
     return $filename;
 }
 
+/**
+ * Logt een wijziging in de box.
+ *
+ * @param string $stalgang De stalgang.
+ * @param int $boxnummer Het boxnummer.
+ * @param string $new_status De nieuwe status.
+ * @param string $old_status De oude status.
+ * @param string $modified_by Wie de wijziging heeft uitgevoerd (bijv. 'admin').
+ * @param string $modification_type Het type wijziging ('aanmelden', 'afmelden', 'dashboard' of 'bulk edit').
+ */
+function esm_log_modification($stalgang, $boxnummer, $new_status, $old_status, $modified_by, $modification_type) {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'eventstable_log';
+    
+    $wpdb->insert($table_name, array(
+         'stalgang' => $stalgang,
+         'boxnummer' => $boxnummer,
+         'new_status' => $new_status,
+         'old_status' => $old_status,
+         'datetime' => current_time('mysql'),
+         'modified_by' => $modified_by,
+         'modification_type' => $modification_type
+    ));
+}
