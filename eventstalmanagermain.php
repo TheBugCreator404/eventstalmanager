@@ -39,6 +39,28 @@ function esm_install() {
 }
 register_activation_hook( __FILE__, 'esm_install' );
 
+function esm_create_log_table() {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'eventstable_log';
+    $charset_collate = $wpdb->get_charset_collate();
+
+    $sql = "CREATE TABLE $table_name (
+       id mediumint(9) NOT NULL AUTO_INCREMENT,
+       stalgang varchar(10) NOT NULL,
+       boxnummer int NOT NULL,
+       new_status varchar(50) NOT NULL,
+       old_status varchar(50) NOT NULL,
+       datetime datetime NOT NULL,
+       modified_by varchar(50) NOT NULL,
+       modification_type varchar(50) NOT NULL,
+       PRIMARY KEY  (id)
+    ) $charset_collate;";
+
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    dbDelta($sql);
+}
+register_activation_hook(__FILE__, 'esm_create_log_table');
+
 // -----------------------------------------------------
 // ADMIN MENU'S & INSTELLINGEN
 // -----------------------------------------------------
