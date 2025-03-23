@@ -726,6 +726,11 @@ function esm_cf7_update_handler( $contact_form ) {
                 'boxnummer' => $boxnummer
              )
          );
+
+         if ( $result !== false ) {
+            esm_log_modification($stalgang, $boxnummer, $new_status, $old_status, 'admin', 'dashboard');
+         }
+        
          if ( $result === false ) {
              error_log("Update mislukt voor stalgang: $stalgang, box: $boxnummer");
          } else {
