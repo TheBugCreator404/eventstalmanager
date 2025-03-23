@@ -93,7 +93,7 @@ function esm_register_admin_menu() {
         'esm_logs',              // Menu slug
         'esm_render_logs_page'   // Callback-functie die de pagina weergeeft
     );
-    
+
     add_submenu_page(
         'esm_main',
         'Instellingen',
@@ -1136,6 +1136,8 @@ function esm_generate_box_qrcode($stalgang, $boxnummer) {
  * @param string $modification_type Het type wijziging ('aanmelden', 'afmelden', 'dashboard' of 'bulk edit').
  */
 function esm_log_modification($stalgang, $boxnummer, $new_status, $old_status, $modified_by, $modification_type) {
+    error_log("Update succesvol voor stalgang: $stalgang, box: $boxnummer");
+
     global $wpdb;
     $table_name = $wpdb->prefix . 'eventstable_log';
     
