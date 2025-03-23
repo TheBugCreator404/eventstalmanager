@@ -675,13 +675,13 @@ function esm_cf7_update_handler( $contact_form ) {
     // Verkrijg de door de gebruiker ingevulde data.
     $data = $submission->get_posted_data();
     
-    // Controleer of alle vereiste velden aanwezig zijn.
+    // Zorg ervoor dat alle vereiste velden aanwezig zijn
     if ( empty($data['stal']) || empty($data['box']) || empty($data['new_status']) || empty($data['update_password']) ) {
          error_log("Sommige vereiste velden ontbreken in update handler.");
          return;
     }
     
-    // Haal het verwachte wachtwoord op uit de plugin-instellingen.
+    // Controleer het wachtwoord
     $expected_password = get_option('esm_update_password');
     // Controleer of het ingevoerde wachtwoord overeenkomt met het verwachte wachtwoord.
     if ( $data['update_password'] !== $expected_password ) {
@@ -690,33 +690,29 @@ function esm_cf7_update_handler( $contact_form ) {
          return;
     }
     
-    // Zorg dat 'new_status' een string is. Soms komt dit veld als array binnen.
+    $stalgang = sanitize_text_field($data['stal']);
+    $boxnummer = intval($data['box']);
     if ( is_array( $data['new_status'] ) ) {
         $new_status = sanitize_text_field( $data['new_status'][0] );
     } else {
         $new_status = sanitize_text_field( $data['new_status'] );
     }
     
-    // Sanitize de 'stal' waarde en converteer 'box' naar een integer.
-    $stalgang = sanitize_text_field($data['stal']);
-    $boxnummer = intval($data['box']);
-    
-    // Verbind met de database en stel de tabelnaam in.
     global $wpdb;
     $table_name = $wpdb->prefix . 'eventstable_manager';
-    
-    // Zoek naar een bestaand record voor deze stalgang en dit boxnummer.
     $box = $wpdb->get_row( $wpdb->prepare("SELECT * FROM $table_name WHERE stalgang = %s AND boxnummer = %d", $stalgang, $boxnummer) );
     
     error_log("POST data: " . print_r($_POST, true));
 
     // Voer een update of insert uit afhankelijk van of het record al bestaat.
     if( $box ) {
-         // Update het bestaande record: sla de huidige status op als 'previous_status' en werk de status bij.
+         // Definieer de oude status
+         $old_status = $box->current_status;
+         
          $result = $wpdb->update(
              $table_name,
              array(
-                'previous_status' => $box->current_status,
+                'previous_status' => $old_status,
                 'current_status'  => $new_status,
                 'last_modified'   => current_time('mysql'),
                 'modified_by'     => 'admin'
@@ -726,9 +722,8 @@ function esm_cf7_update_handler( $contact_form ) {
                 'boxnummer' => $boxnummer
              )
          );
-
          if ( $result !== false ) {
-            esm_log_modification($stalgang, $boxnummer, $new_status, $old_status, 'admin', 'dashboard');
+             esm_log_modification($stalgang, $boxnummer, $new_status, $old_status, 'admin', 'dashboard');
          }
         
          if ( $result === false ) {
@@ -746,19 +741,11 @@ function esm_cf7_update_handler( $contact_form ) {
              'last_modified' => current_time('mysql'),
              'modified_by'     => 'admin'
          ));
-
          if ( $result !== false ) {
-            esm_log_modification($stalgang, $boxnummer, $new_status, $old_status, 'admin', 'dashboard');
-        }
-
-         if ( $result === false ) {
-             error_log("Insert mislukt voor stalgang: $stalgang, box: $boxnummer");
-         } else {
-             error_log("Insert succesvol voor stalgang: $stalgang, box: $boxnummer");
+             esm_log_modification($stalgang, $boxnummer, $new_status, $old_status, 'admin', 'dashboard');
          }
     }
 }
-// Koppel de functie aan de CF7 'wpcf7_before_send_mail' actie.
 add_action( 'wpcf7_before_send_mail', 'esm_cf7_update_handler' );
 
 
