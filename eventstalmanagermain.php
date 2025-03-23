@@ -560,11 +560,12 @@ add_shortcode('eventstable_huurders', 'esm_huurders_shortcode');
 
 // Hook in CF7 voordat de mail wordt verzonden om de database te updaten
 function esm_cf7_before_send_mail_handler( $contact_form ) {
+    // Haal de formulier-ID’s voor aanmelden en afmelden op
     $aanmelden_form_id = intval( get_option('esm_cf7_aanmelden_form_id') );
     $afmelden_form_id  = intval( get_option('esm_cf7_afmelden_form_id') );
     $form_id = intval( $contact_form->id() );
     
-    // Alleen verwerken als het formulier een van onze is
+    // Verwerk alleen als het formulier één van de twee is
     if ( $form_id !== $aanmelden_form_id && $form_id !== $afmelden_form_id ) {
          return;
     }
@@ -575,77 +576,75 @@ function esm_cf7_before_send_mail_handler( $contact_form ) {
     }
     
     $data = $submission->get_posted_data();
-    // Verwacht de verborgen velden: 'stal' en 'box'
+    
+    // Zorg dat de benodigde velden aanwezig zijn
     if ( empty($data['stal']) || empty($data['box']) ) {
          return;
     }
     
-    $stalgang = sanitize_text_field($data['stal']);
+    $stalgang  = sanitize_text_field($data['stal']);
     $boxnummer = intval($data['box']);
     
     global $wpdb;
     $table_name = $wpdb->prefix . 'eventstable_manager';
     $box = $wpdb->get_row( $wpdb->prepare("SELECT * FROM $table_name WHERE stalgang = %s AND boxnummer = %d", $stalgang, $boxnummer) );
     
-    // Als er nog geen record bestaat, initialiseer deze als 'n.v.t.'
-    if ( ! $box ) {
-         $box = (object) array('current_status' => 'n.v.t.');
-         // Insert een nieuw record met de nieuwe status
-         $is_new = true;
-    } else {
-         $is_new = false;
-    }
+    // Bepaal de oude status
+    $old_status = $box ? $box->current_status : 'n.v.t.';
     
+    // Bepaal de nieuwe status en het wijzigingstype op basis van het formulier
     if ( $form_id === $aanmelden_form_id ) {
          $new_status = 'Aangemeld';
+         $modification_type = 'aanmelden';
          $allowed = get_option('esm_allowed_aanmelden', array());
-         if ( ! in_array($box->current_status, $allowed) ) {
-             return;
-         }
     } elseif ( $form_id === $afmelden_form_id ) {
          $new_status = 'Afgemeld';
+         $modification_type = 'afmelden';
          $allowed = get_option('esm_allowed_afmelden', array());
-         if ( ! in_array($box->current_status, $allowed) ) {
-             return;
-         }
+    } else {
+         return;
     }
     
-    // Gebruik 'your-name' omdat "name" gereserveerd is
-    $name  = isset($data['your-name']) ? sanitize_text_field($data['your-name']) : '';
-    $horse = isset($data['horse'])      ? sanitize_text_field($data['horse']) : '';
-    $phone = isset($data['phone'])      ? sanitize_text_field($data['phone']) : '';
+    // Controleer of de huidige status het toelaten (optioneel)
+    if ( ! in_array( $old_status, $allowed ) ) {
+         return;
+    }
     
-    if ( $is_new ) {
-         // Record bestaat nog niet, dus maak een nieuw record aan
-         $wpdb->insert(
-              $table_name,
-              array(
-                   'stalgang'      => $stalgang,
-                   'boxnummer'     => $boxnummer,
-                   'current_status'=> $new_status,
-                   'previous_status'=> $box->current_status, // dit zal 'n.v.t.' zijn
-                   'last_modified' => current_time('mysql'),
-                   'modified_by'   => $name . ' (Paard: ' . $horse . ', Tel: ' . $phone . ')'
-              ),
-              array('%s', '%d', '%s', '%s', '%s', '%s')
+    // Update of insert het record
+    if ( $box ) {
+         $result = $wpdb->update(
+             $table_name,
+             array(
+                'previous_status' => $old_status,
+                'current_status'  => $new_status,
+                'last_modified'   => current_time('mysql'),
+                'modified_by'     => 'admin'
+             ),
+             array(
+                'stalgang'  => $stalgang,
+                'boxnummer' => $boxnummer
+             )
          );
     } else {
-         // Record bestaat wel, dus werk deze bij
-         $wpdb->update(
-              $table_name,
-              array(
-                   'previous_status' => $box->current_status,
-                   'current_status'  => $new_status,
-                   'last_modified'   => current_time('mysql'),
-                   'modified_by'     => $name . ' (Paard: ' . $horse . ', Tel: ' . $phone . ')'
-              ),
-              array(
-                   'stalgang'  => $stalgang,
-                   'boxnummer' => $boxnummer
-              ),
-              array('%s', '%s', '%s', '%s'),
-              array('%s', '%d')
+         $result = $wpdb->insert(
+             $table_name,
+             array(
+                'stalgang'        => $stalgang,
+                'boxnummer'       => $boxnummer,
+                'current_status'  => $new_status,
+                'previous_status' => 'n.v.t.',
+                'last_modified'   => current_time('mysql'),
+                'modified_by'     => 'admin'
+             )
          );
+    }
+    
+    if ( $result !== false ) {
+         // Log de wijziging
+         esm_log_modification($stalgang, $boxnummer, $new_status, $old_status, 'admin', $modification_type);
+         error_log("Update/insert succesvol voor stalgang: $stalgang, box: $boxnummer. Type: $modification_type");
+    } else {
+         error_log("Update/insert mislukt voor stalgang: $stalgang, box: $boxnummer");
     }
 }
 add_action( 'wpcf7_before_send_mail', 'esm_cf7_before_send_mail_handler' );
