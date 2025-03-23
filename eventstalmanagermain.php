@@ -164,6 +164,10 @@ function esm_bulk_update_page() {
                       'stalgang' => $stalgang,
                       'boxnummer' => $i
                   ));
+                  if($result !== false) {
+                    // Log de wijziging met type 'bulk edit'
+                    esm_log_modification($stalgang, $i, $new_status, $old_status, 'admin', 'bulk edit');
+                  }
              } else {
                   $wpdb->insert($table_name, array(
                       'stalgang' => $stalgang,
