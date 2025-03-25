@@ -582,7 +582,11 @@ function esm_cf7_before_send_mail_handler( $contact_form ) {
          return;
     }
     
-    // Haal de gebruikersnaam uit de POST-data op:
+    // Haal de extra velden op uit het formulier
+    $your_name = isset($data['your-name']) ? sanitize_text_field($data['your-name']) : '';
+    $horse     = isset($data['horse']) ? sanitize_text_field($data['horse']) : '';
+    $phone     = isset($data['phone']) ? sanitize_text_field($data['phone']) : '';
+    
     // Combineer de waarden in één string
     $modified_by = trim($your_name);
     if( !empty($horse) ) {
