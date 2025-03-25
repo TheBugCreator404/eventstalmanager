@@ -582,6 +582,9 @@ function esm_cf7_before_send_mail_handler( $contact_form ) {
          return;
     }
     
+    // Haal de gebruikersnaam uit de POST-data op:
+    $modified_by = isset($data['your-name']) ? sanitize_text_field($data['your-name']) : 'admin';
+    
     $stalgang  = sanitize_text_field($data['stal']);
     $boxnummer = intval($data['box']);
     
@@ -618,7 +621,7 @@ function esm_cf7_before_send_mail_handler( $contact_form ) {
                 'previous_status' => $old_status,
                 'current_status'  => $new_status,
                 'last_modified'   => current_time('mysql'),
-                'modified_by'     => 'admin'
+                'modified_by'     => $modified_by
              ),
              array(
                 'stalgang'  => $stalgang,
@@ -634,14 +637,14 @@ function esm_cf7_before_send_mail_handler( $contact_form ) {
                 'current_status'  => $new_status,
                 'previous_status' => 'n.v.t.',
                 'last_modified'   => current_time('mysql'),
-                'modified_by'     => 'admin'
+                'modified_by'     => $modified_by
              )
          );
     }
     
     if ( $result !== false ) {
          // Log de wijziging
-         esm_log_modification($stalgang, $boxnummer, $new_status, $old_status, 'admin', $modification_type);
+         esm_log_modification($stalgang, $boxnummer, $new_status, $old_status, $modified_by, $modification_type);
          error_log("Update/insert succesvol voor stalgang: $stalgang, box: $boxnummer. Type: $modification_type");
     } else {
          error_log("Update/insert mislukt voor stalgang: $stalgang, box: $boxnummer");
