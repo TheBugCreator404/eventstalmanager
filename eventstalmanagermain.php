@@ -583,8 +583,16 @@ function esm_cf7_before_send_mail_handler( $contact_form ) {
     }
     
     // Haal de gebruikersnaam uit de POST-data op:
-    $modified_by = isset($data['your-name']) ? sanitize_text_field($data['your-name']) : 'admin';
-    
+    // Combineer de waarden in één string
+    $modified_by = trim($your_name);
+    if( !empty($horse) ) {
+        $modified_by .= ' (Paard: ' . $horse;
+        if( !empty($phone) ) {
+            $modified_by .= ', Tel: ' . $phone;
+        }
+        $modified_by .= ')';
+    }
+
     $stalgang  = sanitize_text_field($data['stal']);
     $boxnummer = intval($data['box']);
     
