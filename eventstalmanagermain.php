@@ -992,7 +992,7 @@ function esm_render_dashboard() {
     global $wpdb;
     $table_name = $wpdb->prefix . 'eventstable_manager';
     
-    echo '<div class="esm-dashboard" style="display:flex; gap:20px;">';
+    echo '<div class="esm-dashboard" style="display:flex; gap:20px; flex-wrap: wrap;">';
     foreach($stallen as $config){
         $stalgang = $config['stalgang'];
         $box_range = $config['box_range'];
