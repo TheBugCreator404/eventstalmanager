@@ -249,6 +249,9 @@ function esm_settings_page() {
         $redirect_page = isset($_POST['esm_redirect_page']) ? sanitize_text_field($_POST['esm_redirect_page']) : '';
         update_option('esm_redirect_page', $redirect_page);
         
+        $esm_left_column_order = isset($_POST['esm_left_column_order']) ? sanitize_text_field($_POST['esm_left_column_order']) : 'normal';
+        update_option('esm_left_column_order', $esm_left_column_order);
+
         // CF7 Formulier ID's voor de acties
         $cf7_aanmelden = isset($_POST['esm_cf7_aanmelden_form_id']) ? sanitize_text_field($_POST['esm_cf7_aanmelden_form_id']) : '';
         update_option('esm_cf7_aanmelden_form_id', $cf7_aanmelden);
@@ -344,6 +347,20 @@ function esm_settings_page() {
             wp_dropdown_pages($args);
             ?>
             
+            <h2>Dashboard Instellingen</h2>
+            <table class="form-table">
+                <tr>
+                    <th scope="row">Linkerkolom volgorde</th>
+                    <td>
+                        <select name="esm_left_column_order">
+                            <option value="normal" <?php selected(get_option('esm_left_column_order', 'normal'), 'normal'); ?>>Normaal</option>
+                            <option value="reversed" <?php selected(get_option('esm_left_column_order', 'normal'), 'reversed'); ?>>Omgekeerd</option>
+                        </select>
+                        <p class="description">Kies of de linkerkolom van de dashboardtabel normaal of omgekeerd moet worden weergegeven.</p>
+                    </td>
+                </tr>
+            </table>
+
             <h2>CF7 Formulier Instellingen</h2>
             <p>Voer hieronder de Form ID’s in (zoals te vinden in de CF7 beheerpagina) voor de formulieren:</p>
             <p>
@@ -998,6 +1015,22 @@ function esm_render_dashboard() {
             for($j = 0; $j < $kolom; $j++){
                 $index = $i + $j * $rows;
                 $grid[$i][] = isset($boxes[$index]) ? $boxes[$index] : '';
+            }
+        }
+
+        // Nieuwe aanpassing: Als er 2 kolommen zijn, pas de volgorde van de linkerkolom aan
+        if ($kolom == 2) {
+            $left_order = get_option('esm_left_column_order', 'normal');
+            if ($left_order === 'reversed') {
+                 $leftColumn = array();
+                 foreach ($grid as $i => $row) {
+                     $leftColumn[] = $row[0];
+                 }
+                 $leftColumn = array_reverse($leftColumn);
+                 foreach ($grid as $i => &$row) {
+                     $row[0] = $leftColumn[$i];
+                 }
+                 unset($row);
             }
         }
         
