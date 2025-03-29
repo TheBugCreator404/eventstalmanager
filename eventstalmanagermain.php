@@ -564,6 +564,10 @@ function esm_huurders_shortcode() {
             <h2>Afmelden</h2>
              <?php echo do_shortcode('[contact-form-7 id="' . intval(get_option('esm_cf7_afmelden_form_id')) . '"]'); ?>
          </div>
+         <div id="Message" style="display: none;">
+            <h2>Stal huren?</h2>
+            <p>Neem contact op met de stalmeester of het secetariaat</p>
+         </div>
     </div>
     <?php
     return ob_get_clean();

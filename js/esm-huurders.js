@@ -29,12 +29,15 @@ window.onload = function() {
                   if(info.allowed_aanmelden) {
                       document.getElementById('cf7-aanmelden').style.display = 'block';
                       document.getElementById('cf7-afmelden').style.display = 'none';
+                      document.getElementById('message').style.display = 'none';
                   } else if(info.allowed_afmelden) {
                       document.getElementById('cf7-afmelden').style.display = 'block';
                       document.getElementById('cf7-aanmelden').style.display = 'none';
+                      document.getElementById('message').style.display = 'none';
                   } else {
                       document.getElementById('cf7-aanmelden').style.display = 'none';
                       document.getElementById('cf7-afmelden').style.display = 'none';
+                      document.getElementById('message').style.display = 'block';
                   }
               } else {
                   document.getElementById('esm-huurders-content').innerHTML = '<p>' + data.data + '</p>';
